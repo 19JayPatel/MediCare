@@ -1,0 +1,69 @@
+<resources>
+    <string name="app_name">MediCare</string>
+    <string name="medical_logo_description">Medical Logo</string>
+    <string name="onboarding_title_1">Find Trusted\nDoctors Nearby</string>
+    <string name="onboarding_title_2">Easy Appointment\nScheduling</string>
+    <string name="onboarding_title_3">Track Your Health\nRecords Easily</string>
+    <string name="onboarding_desc_1">Discover top-rated healthcare professionals near you. Book appointments instantly with just a few taps.</string>
+    <string name="onboarding_desc_2">Book, reschedule or cancel appointments at any time. Get reminders and manage your healthcare calendar effortlessly.</string>
+    <string name="onboarding_desc_3">Keep all your medical history, prescriptions and reports in one secure place. Access anytime, anywhere.</string>
+    <string name="get_started">Get Started</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next \u2192</string>
+
+    <!-- Signup Strings -->
+    <string name="signup_title">Get Started</string>
+    <string name="signup_subtitle">Your health appointments, made easy</string>
+    <string name="hint_name">Name</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="terms_text">I agree with the Terms of Service &amp; Privacy Policy</string>
+    <string name="continue_google">Continue with Google</string>
+    <string name="login_prompt">Have an account? <b>Log in</b></string>
+
+    <!-- Login Strings -->
+    <string name="login_title">Welcome Back</string>
+    <string name="login_subtitle">Sign in to continue to MediCare</string>
+    <string name="already_account">Already have an account? <b>Sign In</b></string>
+
+    <!-- Main Strings -->
+    <string name="welcome_user">Welcome, %s</string>
+    <string name="logout">Logout</string>
+
+    <!-- Profile Strings -->
+    <string name="profile">Profile</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="favorite">Favorite</string>
+    <string name="notifications">Notifications</string>
+    <string name="settings">Settings</string>
+    <string name="help_and_support">Help and Support</string>
+    <string name="terms_and_conditions">Terms and Conditions</string>
+    <string name="log_out">Log Out</string>
+    <string name="back_button_desc">Back</string>
+    <string name="profile_image_desc">Profile Image</string>
+    <string name="edit_image_desc">Edit Image</string>
+
+    <!-- Edit Profile Strings -->
+    <string name="change_photo">Change Photo</string>
+    <string name="personal_info">PERSONAL INFO</string>
+    <string name="full_name">Full Name</string>
+    <string name="dob">Date of Birth</string>
+    <string name="gender">Gender</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
+    <string name="other">Other</string>
+    <string name="contact_details">CONTACT DETAILS</string>
+    <string name="email_address">Email Address</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="address">Address</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="profile_updated">Profile Updated</string>
+
+    <!-- Navigation Strings -->
+    <string name="home">Home</string>
+    <string name="appointments">Appointments</string>
+    <string name="schedule">Schedule</string>
+
+    <!--Client I'd for Google Popup Login and SignUp-->
+    <string name="client_id">33134740074-cm7bscq7ec61ui82rqrqm3b6curj4hpd.apps.googleusercontent.com</string>
+</resources>

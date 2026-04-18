@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/customBottomNav"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:elevation="8dp">
+
+    <!-- Subtle Top Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/border" />
+
+    <!-- Icons Container with Weight Distribution -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="4"
+        android:paddingHorizontal="8dp"
+        android:clipToPadding="false">
+
+        <FrameLayout
+            android:id="@+id/nav_home_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/nav_home"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_home_filled"
+                android:contentDescription="@string/home"
+                app:tint="@color/primary" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/nav_appointments_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/nav_appointments"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_calendar_filled"
+                android:contentDescription="@string/appointments"
+                app:tint="@color/text_secondary" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/nav_schedule_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/nav_schedule"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_time"
+                android:contentDescription="@string/schedule"
+                app:tint="@color/text_secondary" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/nav_profile_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/nav_profile"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_person"
+                android:contentDescription="@string/profile"
+                app:tint="@color/text_secondary" />
+        </FrameLayout>
+
+    </LinearLayout>
+</LinearLayout>
