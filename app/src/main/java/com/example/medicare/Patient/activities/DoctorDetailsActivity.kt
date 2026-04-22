@@ -1,8 +1,8 @@
 package com.example.medicare.Patient.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.medicare.R
 import com.example.medicare.Patient.models.DoctorDetailsModel
@@ -37,7 +37,13 @@ class DoctorDetailsActivity : AppCompatActivity() {
         }
 
         findViewById<MaterialButton>(R.id.btnBookAppointment).setOnClickListener {
-            Toast.makeText(this, "Booking Appointment with ${doctor.name}...", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, SelectTimeSlotActivity::class.java).apply {
+                putExtra("doctorName", doctor.name)
+                putExtra("specialization", doctor.specialization)
+                putExtra("hospital", doctor.hospitalName)
+                putExtra("doctorId", "doc_123")
+            }
+            startActivity(intent)
         }
     }
 

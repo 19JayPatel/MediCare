@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.medicare.Doctor.adapter.DoctorAppointmentsAdapter
+import com.example.medicare.Doctor.adapter.DashboardAppointmentsAdapter
 import com.example.medicare.Doctor.model.AppointmentModel
 import com.example.medicare.R
 import com.example.medicare.databinding.FragmentDoctorDashboardBinding
@@ -33,16 +33,20 @@ class DoctorDashboardFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        val dummyAppointments = listOf(
+        // Data logic: Dashboard shows only Accepted appointments
+        val fullList = listOf(
             AppointmentModel("1", "Ravi Sharma", "Today", "09:00 AM", "Skin Allergy", "Accepted"),
             AppointmentModel("2", "Meena Patel", "Today", "10:30 AM", "Acne Treatment", "Pending"),
             AppointmentModel("3", "Rahul Verma", "Today", "11:45 AM", "Checkup", "Accepted"),
             AppointmentModel("4", "Sonia Gill", "Today", "02:00 PM", "Follow-up", "Pending")
         )
 
+        val acceptedList = fullList.filter { it.status == "Accepted" }
+
         binding.rvTodayAppointments.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = DoctorAppointmentsAdapter(dummyAppointments)
+            // Using specific adapter for Dashboard
+            adapter = DashboardAppointmentsAdapter(acceptedList)
             isNestedScrollingEnabled = false
         }
     }

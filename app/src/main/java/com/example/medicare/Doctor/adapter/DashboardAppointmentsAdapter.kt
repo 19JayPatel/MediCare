@@ -1,21 +1,20 @@
 package com.example.medicare.Doctor.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.medicare.Doctor.model.AppointmentModel
 import com.example.medicare.R
-import com.example.medicare.databinding.ItemDoctorAppointmentBinding
+import com.example.medicare.databinding.ItemDashboardAppointmentBinding
 
-class DoctorAppointmentsAdapter(private var appointments: List<AppointmentModel>) :
-    RecyclerView.Adapter<DoctorAppointmentsAdapter.ViewHolder>() {
+class DashboardAppointmentsAdapter(private var appointments: List<AppointmentModel>) :
+    RecyclerView.Adapter<DashboardAppointmentsAdapter.ViewHolder>() {
 
-    class ViewHolder(val binding: ItemDoctorAppointmentBinding) : RecyclerView.ViewHolder(binding.root)
+    class ViewHolder(val binding: ItemDashboardAppointmentBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemDoctorAppointmentBinding.inflate(
+        val binding = ItemDashboardAppointmentBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
         return ViewHolder(binding)
@@ -29,31 +28,12 @@ class DoctorAppointmentsAdapter(private var appointments: List<AppointmentModel>
             tvDescription.text = appointment.problem
             tvStatusBadge.text = appointment.status
 
-            // Status Styling
+            // Status Styling (only "Accepted" expected here as per filter logic)
             updateStatusUI(this, appointment.status)
-
-            // Button visibility based on status (Only Pending items show buttons)
-            if (appointment.status == "Pending") {
-                llActions.visibility = View.VISIBLE
-                divider.visibility = View.VISIBLE
-            } else {
-                llActions.visibility = View.GONE
-                divider.visibility = View.GONE
-            }
-
-            btnAccept.setOnClickListener {
-                appointment.status = "Accepted"
-                notifyItemChanged(position)
-            }
-
-            btnReject.setOnClickListener {
-                appointment.status = "Rejected"
-                notifyItemChanged(position)
-            }
         }
     }
 
-    private fun updateStatusUI(binding: ItemDoctorAppointmentBinding, status: String) {
+    private fun updateStatusUI(binding: ItemDashboardAppointmentBinding, status: String) {
         val context = binding.root.context
         when (status) {
             "Accepted" -> {

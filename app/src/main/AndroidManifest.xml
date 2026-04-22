@@ -76,6 +76,14 @@
             android:theme="@style/Theme.MediCare" />
 
         <activity
+            android:name=".Patient.activities.SelectTimeSlotActivity"
+            android:theme="@style/Theme.Patient.SelectTimeSlot" />
+
+        <activity
+            android:name=".Patient.activities.BookingConfirmationActivity"
+            android:theme="@style/Theme.Patient.BookingConfirmation" />
+
+        <activity
             android:name=".Admin.activities.AdminMainActivity"
             android:exported="false"
             android:theme="@style/Theme.MediCare" />

@@ -19,4 +19,42 @@
         <item name="cornerSizeBottomLeft">0dp</item>
         <item name="cornerSizeBottomRight">0dp</item>
     </style>
+
+    <!-- Local theme for SelectTimeSlotActivity to override purple -->
+    <style name="Theme.Patient.SelectTimeSlot" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Override purple -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorSecondary">@color/primary</item>
+        <item name="colorTertiary">@color/primary</item>
+        <item name="colorPrimaryContainer">@color/blue_light</item>
+        <item name="colorOnPrimaryContainer">@color/primary</item>
+
+        <!-- Remove purple tint -->
+        <item name="materialButtonStyle">@style/Widget.Material3.Button</item>
+
+        <!-- Toolbar icon fix -->
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Background color -->
+        <item name="android:windowBackground">@color/bg</item>
+    </style>
+
+    <!-- Local theme for BookingConfirmationActivity to override purple -->
+    <style name="Theme.Patient.BookingConfirmation" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorSecondary">@color/primary</item>
+        <item name="colorTertiary">@color/primary</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Background color -->
+        <item name="android:windowBackground">@color/bg</item>
+    </style>
 </resources>
