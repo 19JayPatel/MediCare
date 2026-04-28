@@ -3,7 +3,9 @@ package com.example.medicare.Admin.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.medicare.Admin.model.UserModel
+import com.example.medicare.R
 import com.example.medicare.databinding.ItemUserBinding
 
 class UsersAdapter(private val users: List<UserModel>) :
@@ -21,9 +23,19 @@ class UsersAdapter(private val users: List<UserModel>) :
         holder.binding.apply {
             tvUserName.text = user.name
             tvEmail.text = user.email
-            tvJoinedDate.text = "Joined: ${user.joinedDate}"
+            tvJoinedDate.text = user.joinedDate
             tvBookingCount.text = user.bookingCount.toString()
-            ivUser.setImageResource(user.imageRes)
+            
+            if (user.imageUrl.isNotEmpty()) {
+                Glide.with(holder.itemView.context)
+                    .load(user.imageUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .error(R.drawable.ic_user)
+                    .circleCrop()
+                    .into(ivUser)
+            } else {
+                ivUser.setImageResource(R.drawable.ic_user)
+            }
         }
     }
 

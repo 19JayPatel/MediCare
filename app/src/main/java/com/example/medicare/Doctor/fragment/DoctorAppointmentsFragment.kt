@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.medicare.Doctor.adapter.DoctorAppointmentsAdapter
-import com.example.medicare.Doctor.model.AppointmentModel
+import com.example.medicare.Patient.models.AppointmentModel
 import com.example.medicare.databinding.FragmentDoctorAppointmentsBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -36,37 +36,41 @@ class DoctorAppointmentsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
-        setupClickListeners()
-        fetchAppointments()
+        fetchDoctorAppointments()
     }
 
     private fun setupRecyclerView() {
-        adapter = DoctorAppointmentsAdapter(appointmentList)
+        adapter = DoctorAppointmentsAdapter(appointmentList) { appointment, newStatus ->
+            updateAppointmentStatus(appointment, newStatus)
+        }
         binding.rvAppointments.apply {
             layoutManager = LinearLayoutManager(requireContext())
             this.adapter = this@DoctorAppointmentsFragment.adapter
         }
     }
 
-    private fun fetchAppointments() {
-        val doctorId = auth.currentUser?.uid ?: return
-        database.child("appointments").orderByChild("doctorId").equalTo(doctorId)
+    private fun fetchDoctorAppointments() {
+        val doctorUid = auth.currentUser?.uid ?: return
+        database.child("Appointments").orderByChild("doctorUid").equalTo(doctorUid)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     appointmentList.clear()
                     for (postSnapshot in snapshot.children) {
                         val appointment = postSnapshot.getValue(AppointmentModel::class.java)
-                        appointment?.let { 
-                            // Ensure the ID is set from the key if not already in the model
-                            val apptWithId = it.copy(id = postSnapshot.key ?: it.id)
-                            appointmentList.add(apptWithId) 
+                        if (appointment != null) {
+                            appointmentList.add(appointment)
                         }
                     }
                     
                     if (appointmentList.isEmpty()) {
-                        // Handle empty state if needed
+                        binding.rvAppointments.visibility = View.GONE
+                        // Show empty state if you have one
+                    } else {
+                        binding.rvAppointments.visibility = View.VISIBLE
+                        // Sort by creation time (newest first)
+                        appointmentList.sortByDescending { it.createdAt }
+                        adapter.notifyDataSetChanged()
                     }
-                    adapter.notifyDataSetChanged()
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -75,9 +79,15 @@ class DoctorAppointmentsFragment : Fragment() {
             })
     }
 
-    private fun setupClickListeners() {
-        binding.btnFilter.setOnClickListener {
-            Toast.makeText(requireContext(), "Filter clicked", Toast.LENGTH_SHORT).show()
+    private fun updateAppointmentStatus(appointment: AppointmentModel, newStatus: String) {
+        if (appointment.bookingId.isNotEmpty()) {
+            database.child("Appointments").child(appointment.bookingId).child("status").setValue(newStatus)
+                .addOnSuccessListener {
+                    Toast.makeText(context, "Status updated to $newStatus", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Failed to update status", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 

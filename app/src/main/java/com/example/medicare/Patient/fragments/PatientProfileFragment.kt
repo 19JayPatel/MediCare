@@ -15,7 +15,7 @@ import com.example.medicare.Patient.adapters.ProfileMenuAdapter
 import com.example.medicare.R
 import com.example.medicare.databinding.FragmentPatientProfileBinding
 import com.example.medicare.Patient.models.ProfileMenuItem
-import com.example.medicare.auth.LoginActivity
+import com.example.medicare.utils.LogoutHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
@@ -84,7 +84,8 @@ class PatientProfileFragment : Fragment() {
                 handleMenuClick(getString(R.string.terms_and_conditions))
             },
             ProfileMenuItem(7, getString(R.string.log_out), R.drawable.ic_logout) {
-                logout()
+                // Use LogoutHelper for professional logout with confirmation
+                LogoutHelper.showLogoutDialog(requireContext())
             }
         )
 
@@ -92,14 +93,6 @@ class PatientProfileFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = ProfileMenuAdapter(menuItems)
         }
-    }
-
-    private fun logout() {
-        auth.signOut()
-        val intent = Intent(requireContext(), LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        requireActivity().finish()
     }
 
     private fun setupClickListeners() {

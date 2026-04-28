@@ -5,12 +5,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.medicare.Doctor.model.AppointmentModel
+import com.example.medicare.Patient.models.AppointmentModel
 import com.example.medicare.R
 import com.example.medicare.databinding.ItemDoctorAppointmentBinding
 
-class DoctorAppointmentsAdapter(private var appointments: List<AppointmentModel>) :
-    RecyclerView.Adapter<DoctorAppointmentsAdapter.ViewHolder>() {
+class DoctorAppointmentsAdapter(
+    private var appointments: List<AppointmentModel>,
+    private val onAction: (AppointmentModel, String) -> Unit
+) : RecyclerView.Adapter<DoctorAppointmentsAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: ItemDoctorAppointmentBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -25,15 +27,15 @@ class DoctorAppointmentsAdapter(private var appointments: List<AppointmentModel>
         val appointment = appointments[position]
         holder.binding.apply {
             tvPatientName.text = appointment.patientName
-            tvDateTime.text = "${appointment.date} · ${appointment.time}"
-            tvDescription.text = appointment.problem
+            tvDateTime.text = "${appointment.appointmentDate} · ${appointment.appointmentTime}"
+            tvDescription.text = "Specialty: ${appointment.doctorSpecialty}"
             tvStatusBadge.text = appointment.status
 
             // Status Styling
             updateStatusUI(this, appointment.status)
 
-            // Button visibility based on status (Only Pending items show buttons)
-            if (appointment.status == "Pending") {
+            // Button visibility (Only Upcoming items show Complete/Cancel buttons)
+            if (appointment.status == "Upcoming") {
                 llActions.visibility = View.VISIBLE
                 divider.visibility = View.VISIBLE
             } else {
@@ -41,14 +43,15 @@ class DoctorAppointmentsAdapter(private var appointments: List<AppointmentModel>
                 divider.visibility = View.GONE
             }
 
+            // In your XML, btnAccept is used for "Complete", btnReject for "Cancel"
+            btnAccept.text = "Complete"
             btnAccept.setOnClickListener {
-                appointment.status = "Accepted"
-                notifyItemChanged(position)
+                onAction(appointment, "Completed")
             }
 
+            btnReject.text = "Cancel"
             btnReject.setOnClickListener {
-                appointment.status = "Rejected"
-                notifyItemChanged(position)
+                onAction(appointment, "Cancelled")
             }
         }
     }
@@ -56,15 +59,19 @@ class DoctorAppointmentsAdapter(private var appointments: List<AppointmentModel>
     private fun updateStatusUI(binding: ItemDoctorAppointmentBinding, status: String) {
         val context = binding.root.context
         when (status) {
-            "Accepted" -> {
+            "Completed" -> {
                 binding.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.success))
                 binding.tvStatusBadge.setBackgroundColor(ContextCompat.getColor(context, R.color.green_light))
             }
-            "Rejected" -> {
+            "Cancelled" -> {
                 binding.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.error))
                 binding.tvStatusBadge.setBackgroundColor(ContextCompat.getColor(context, R.color.red_light))
             }
-            else -> { // Pending
+            "Upcoming" -> {
+                binding.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.primary))
+                binding.tvStatusBadge.setBackgroundColor(ContextCompat.getColor(context, R.color.blue_light))
+            }
+            else -> {
                 binding.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.warning))
                 binding.tvStatusBadge.setBackgroundColor(ContextCompat.getColor(context, R.color.yellow_light))
             }

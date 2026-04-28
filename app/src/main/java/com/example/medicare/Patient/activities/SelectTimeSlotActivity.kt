@@ -190,8 +190,9 @@ class SelectTimeSlotActivity : AppCompatActivity() {
                     val bookedSlots = mutableSetOf<String>()
                     for (postSnapshot in snapshot.children) {
                         val appointment = postSnapshot.getValue(com.example.medicare.Patient.models.AppointmentModel::class.java)
-                        if (appointment != null && appointment.bookingDate == selectedDate) {
-                            bookedSlots.add(appointment.bookingTime)
+                        // Updated field names from refactored AppointmentModel
+                        if (appointment != null && appointment.appointmentDate == selectedDate && appointment.status != "Cancelled") {
+                            bookedSlots.add(appointment.appointmentTime)
                         }
                     }
 

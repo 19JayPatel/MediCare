@@ -1,25 +1,18 @@
 package com.example.medicare.Patient.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.medicare.Patient.models.AppointmentModel
+import com.example.medicare.R
 import com.example.medicare.databinding.ItemBookingBinding
 
-data class BookingModel(
-    val date: String = "",
-    val doctorName: String = "",
-    val specialty: String = "",
-    val clinic: String = "",
-    val image: Int = 0,
-    val imageName: String? = null,
-    val bookingId: String = "",
-    val time: String = ""
-)
-
 class BookingAdapter(
-    private val list: List<BookingModel>,
-    private val onCancel: (BookingModel) -> Unit,
-    private val onReschedule: (BookingModel) -> Unit
+    private val list: List<AppointmentModel>,
+    private val onCancel: (AppointmentModel) -> Unit
 ) : RecyclerView.Adapter<BookingAdapter.ViewHolder>() {
 
     inner class ViewHolder(val binding: ItemBookingBinding) : RecyclerView.ViewHolder(binding.root)
@@ -31,20 +24,50 @@ class BookingAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = list[position]
-        holder.binding.bookingDate.text = "${item.date} - ${item.time}"
-        holder.binding.doctorName.text = item.doctorName
-        holder.binding.doctorSpecialty.text = item.specialty
-        holder.binding.clinicName.text = item.clinic
+        val context = holder.itemView.context
         
-        if (item.image != 0) {
-            holder.binding.doctorImage.setImageResource(item.image)
-        } else if (item.imageName != null) {
-            val resId = holder.itemView.context.resources.getIdentifier(item.imageName, "drawable", holder.itemView.context.packageName)
-            if (resId != 0) holder.binding.doctorImage.setImageResource(resId)
+        holder.binding.doctorName.text = "Dr. ${item.doctorName}"
+        holder.binding.doctorSpecialty.text = item.doctorSpecialty
+        holder.binding.bookingDate.text = "${item.appointmentDate} - ${item.appointmentTime}"
+        holder.binding.clinicName.text = item.appointmentDay
+        
+        // Status Badge UI - Matching Screenshot Style (Completed = Green)
+        holder.binding.tvStatusBadge.text = item.status
+        when (item.status) {
+            "Completed" -> {
+                holder.binding.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.success))
+                holder.binding.tvStatusBadge.setBackgroundResource(R.drawable.bg_search_bar)
+                holder.binding.actionButtons.visibility = View.GONE
+            }
+            "Upcoming" -> {
+                holder.binding.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.primary))
+                holder.binding.tvStatusBadge.setBackgroundResource(R.drawable.bg_search_bar)
+                holder.binding.actionButtons.visibility = View.VISIBLE
+            }
+            "Cancelled" -> {
+                holder.binding.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.error))
+                holder.binding.tvStatusBadge.setBackgroundResource(R.drawable.bg_search_bar)
+                holder.binding.actionButtons.visibility = View.GONE
+            }
+            else -> {
+                holder.binding.tvStatusBadge.setTextColor(ContextCompat.getColor(context, R.color.text_secondary))
+                holder.binding.tvStatusBadge.setBackgroundResource(R.drawable.bg_search_bar)
+                holder.binding.actionButtons.visibility = View.GONE
+            }
+        }
+
+        // Load Image using Glide
+        if (item.doctorImage.isNotEmpty()) {
+            Glide.with(context)
+                .load(item.doctorImage)
+                .placeholder(R.drawable.ic_user)
+                .into(holder.binding.doctorImage)
+        } else {
+            holder.binding.doctorImage.setImageResource(R.drawable.ic_user)
         }
 
         holder.binding.btnCancel.setOnClickListener { onCancel(item) }
-        holder.binding.btnReschedule.setOnClickListener { onReschedule(item) }
+        holder.binding.btnReschedule.visibility = View.GONE
     }
 
     override fun getItemCount() = list.size

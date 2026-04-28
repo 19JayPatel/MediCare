@@ -21,13 +21,12 @@
             android:layout_width="54dp"
             android:layout_height="54dp"
             android:background="@color/blue_light"
-            android:padding="10dp"
-            android:src="@drawable/ic_person"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_user"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:shapeAppearanceOverlay="@style/CircleImageAppearance"
-            app:tint="@color/primary" />
+            app:shapeAppearanceOverlay="@style/CircleImageAppearance" />
 
         <!-- Center: Text Content -->
         <LinearLayout

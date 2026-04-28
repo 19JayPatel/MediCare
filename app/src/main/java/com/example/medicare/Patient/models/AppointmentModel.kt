@@ -1,14 +1,16 @@
 package com.example.medicare.Patient.models
 
 data class AppointmentModel(
-    val appointmentId: String = "",
+    var bookingId: String = "",
     val patientUid: String = "",
     val doctorUid: String = "",
     val doctorName: String = "",
-    val specialty: String = "",
-    val clinicName: String = "",
-    val bookingDate: String = "",
-    val bookingTime: String = "",
-    val status: String = "Confirmed",
+    val patientName: String = "",
+    val doctorImage: String = "",
+    val doctorSpecialty: String = "",
+    val appointmentDate: String = "",
+    val appointmentDay: String = "",
+    val appointmentTime: String = "",
+    var status: String = "Upcoming", // "Upcoming", "Completed", "Cancelled"
     val createdAt: Long = System.currentTimeMillis()
 )

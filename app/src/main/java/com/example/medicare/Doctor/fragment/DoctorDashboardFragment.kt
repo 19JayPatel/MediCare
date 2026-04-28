@@ -1,14 +1,16 @@
 package com.example.medicare.Doctor.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.medicare.Doctor.adapter.DashboardAppointmentsAdapter
-import com.example.medicare.Doctor.model.AppointmentModel
+import com.bumptech.glide.Glide
+import com.example.medicare.Doctor.adapter.DoctorAppointmentsAdapter
+import com.example.medicare.Patient.models.AppointmentModel
 import com.example.medicare.R
 import com.example.medicare.databinding.FragmentDoctorDashboardBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -22,8 +24,8 @@ class DoctorDashboardFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var auth: FirebaseAuth
     private lateinit var database: DatabaseReference
-    private val appointmentList = mutableListOf<AppointmentModel>()
-    private lateinit var adapter: DashboardAppointmentsAdapter
+    private val todayAppointments = mutableListOf<AppointmentModel>()
+    private lateinit var adapter: DoctorAppointmentsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,13 +41,15 @@ class DoctorDashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
-        setupClickListeners()
-        fetchDoctorData()
-        fetchAppointments()
+        fetchDoctorInfo()
+        fetchDashboardStats()
     }
 
     private fun setupRecyclerView() {
-        adapter = DashboardAppointmentsAdapter(appointmentList)
+        // Reusing DoctorAppointmentsAdapter for consistency
+        adapter = DoctorAppointmentsAdapter(todayAppointments) { appointment, newStatus ->
+            updateAppointmentStatus(appointment, newStatus)
+        }
         binding.rvTodayAppointments.apply {
             layoutManager = LinearLayoutManager(requireContext())
             this.adapter = this@DoctorDashboardFragment.adapter
@@ -53,73 +57,87 @@ class DoctorDashboardFragment : Fragment() {
         }
     }
 
-    private fun fetchDoctorData() {
+    private fun fetchDoctorInfo() {
         val userId = auth.currentUser?.uid ?: return
-        database.child("users").child(userId).addValueEventListener(object : ValueEventListener {
+        database.child("Doctors").child(userId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (_binding != null) {
-                    val name = snapshot.child("fullName").value as? String ?: "Doctor"
-                    binding.tvHeaderSubtitle.text = "Good morning, Dr. $name 👋"
+                if (_binding == null) return
+                
+                val name = snapshot.child("fullName").value as? String ?: "Doctor"
+                binding.tvHeaderSubtitle.text = "Good morning, Dr. $name 👋"
+                
+                val imageUrl = snapshot.child("imageUrl").value as? String
+                if (!imageUrl.isNullOrEmpty()) {
+                    Glide.with(requireContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_person)
+                        .into(binding.ivDoctorProfile)
                 }
             }
             override fun onCancelled(error: DatabaseError) {}
         })
     }
 
-    private fun fetchAppointments() {
-        val doctorId = auth.currentUser?.uid ?: return
-        val todayDate = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date())
+    private fun fetchDashboardStats() {
+        val doctorUid = auth.currentUser?.uid ?: return
+        val todayStr = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date())
 
-        database.child("appointments").orderByChild("doctorId").equalTo(doctorId)
+        database.child("Appointments").orderByChild("doctorUid").equalTo(doctorUid)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (_binding == null) return
-                    
-                    val allAppts = mutableListOf<AppointmentModel>()
-                    var total = 0
-                    var todayCount = 0
-                    var pendingCount = 0
-                    var completedCount = 0
 
-                    for (postSnapshot in snapshot.children) {
-                        val appt = postSnapshot.getValue(AppointmentModel::class.java)
+                    var total = 0
+                    var today = 0
+                    var pending = 0
+                    var completed = 0
+                    todayAppointments.clear()
+
+                    for (snap in snapshot.children) {
+                        val appt = snap.getValue(AppointmentModel::class.java)
                         appt?.let {
                             total++
-                            if (it.date == todayDate) todayCount++
-                            if (it.status == "Pending") pendingCount++
-                            if (it.status == "Confirmed" || it.status == "Accepted") completedCount++ // Assuming Accepted/Confirmed is completed or upcoming
                             
-                            // For the dashboard list, show today's accepted/confirmed appointments
-                            if (it.date == todayDate && (it.status == "Accepted" || it.status == "Confirmed")) {
-                                allAppts.add(it)
+                            // 1. Check if appointment is today
+                            if (it.appointmentDate == todayStr) {
+                                today++
+                                // Add today's "Upcoming" appointments to list
+                                if (it.status == "Upcoming") {
+                                    todayAppointments.add(it)
+                                }
+                            }
+
+                            // 2. Count statuses
+                            when (it.status) {
+                                "Upcoming" -> pending++ // Or however you define "Requests/Pending"
+                                "Completed" -> completed++
                             }
                         }
                     }
 
+                    // Update UI Counts
                     binding.tvTotalAppointmentsCount.text = total.toString()
-                    binding.tvTodayAppointmentsCount.text = todayCount.toString()
-                    binding.tvPendingRequestsCount.text = pendingCount.toString()
-                    binding.tvCompletedCount.text = completedCount.toString()
+                    binding.tvTodayAppointmentsCount.text = today.toString()
+                    binding.tvPendingRequestsCount.text = pending.toString()
+                    binding.tvCompletedCount.text = completed.toString()
 
-                    appointmentList.clear()
-                    appointmentList.addAll(allAppts)
+                    // Update List
+                    todayAppointments.sortByDescending { it.createdAt }
                     adapter.notifyDataSetChanged()
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(context, "Failed to load appointments", Toast.LENGTH_SHORT).show()
+                    Log.e("Dashboard", "Error: ${error.message}")
                 }
             })
     }
 
-    private fun setupClickListeners() {
-        binding.tvSeeAll.setOnClickListener {
-            // Navigate to Appointments Fragment if possible via activity
-            Toast.makeText(requireContext(), "View all appointments", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.ivDoctorProfile.setOnClickListener {
-            Toast.makeText(requireContext(), "Profile clicked", Toast.LENGTH_SHORT).show()
+    private fun updateAppointmentStatus(appointment: AppointmentModel, newStatus: String) {
+        if (appointment.bookingId.isNotEmpty()) {
+            database.child("Appointments").child(appointment.bookingId).child("status").setValue(newStatus)
+                .addOnSuccessListener {
+                    Toast.makeText(context, "Status updated", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 

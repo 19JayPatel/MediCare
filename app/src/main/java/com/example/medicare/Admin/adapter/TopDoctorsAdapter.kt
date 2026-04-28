@@ -3,7 +3,9 @@ package com.example.medicare.Admin.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.medicare.Admin.model.DoctorModel
+import com.example.medicare.R
 import com.example.medicare.databinding.ItemTopDoctorBinding
 
 class TopDoctorsAdapter(private val doctors: List<DoctorModel>) :
@@ -22,7 +24,16 @@ class TopDoctorsAdapter(private val doctors: List<DoctorModel>) :
             tvDoctorName.text = doctor.name
             tvSpecialization.text = "${doctor.specialization} · ${doctor.hospital}"
             tvRating.text = doctor.rating.toString()
-            ivDoctor.setImageResource(doctor.imageRes)
+            
+            if (doctor.imageUrl.isNotEmpty()) {
+                Glide.with(holder.itemView.context)
+                    .load(doctor.imageUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .error(R.drawable.ic_user)
+                    .into(ivDoctor)
+            } else {
+                ivDoctor.setImageResource(R.drawable.ic_user)
+            }
         }
     }
 

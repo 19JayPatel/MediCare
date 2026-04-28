@@ -56,7 +56,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Joined: Jan 12, 2024"
+            android:text="Jan 12, 2024"
             android:textColor="@color/text_tertiary"
             android:textSize="12sp"
             app:layout_constraintEnd_toStartOf="@+id/llBookings"

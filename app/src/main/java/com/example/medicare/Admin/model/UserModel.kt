@@ -7,5 +7,6 @@ data class UserModel(
     val bookingCount: Int = 0,
     val imageRes: Int = 0,
     val imageName: String? = null,
+    val imageUrl: String = "",
     val userId: String = ""
 )

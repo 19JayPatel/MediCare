@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="8dp"
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="16dp"
-    app:cardElevation="2dp">
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,10 +27,23 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="May 22, 2023 - 10.00 AM"
+                android:text="30 Apr 2026 - 10:45 am"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_search_bar"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:text="Completed"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/success"
+                android:layout_marginEnd="8dp"/>
 
             <ImageView
                 android:layout_width="20dp"
@@ -51,25 +65,27 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/imgCard"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="0dp">
+                app:cardElevation="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
                     android:id="@+id/doctorImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/intro_image2" />
+                    android:src="@drawable/ic_user" />
             </androidx.cardview.widget.CardView>
 
             <TextView
                 android:id="@+id/doctorName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="Dr. Jatin Patel"
+                android:layout_marginStart="16dp"
+                android:text="Dr. Kunal Mehta"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -82,7 +98,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Orthopedic Surgery"
+                android:text="Orthopedic"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 app:layout_constraintStart_toStartOf="@id/doctorName"
@@ -99,7 +115,7 @@
                 <ImageView
                     android:layout_width="14dp"
                     android:layout_height="14dp"
-                    android:src="@drawable/ic_location_outline"
+                    android:src="@drawable/ic_time"
                     app:tint="@color/text_tertiary" />
 
                 <TextView
@@ -107,7 +123,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:text="Elite Ortho Clinic, USA"
+                    android:text="Thursday"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -115,6 +131,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
+            android:id="@+id/actionButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -123,26 +140,29 @@
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnCancel"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="44dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/google_button_background"
-                android:text="Cancel"
+                android:text="Cancel Appointment"
                 android:textAllCaps="false"
                 android:textColor="@color/text_primary"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnReschedule"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="44dp"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_rounded_button"
                 android:text="Reschedule"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
-                android:textStyle="bold" />
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
 
         </LinearLayout>
 

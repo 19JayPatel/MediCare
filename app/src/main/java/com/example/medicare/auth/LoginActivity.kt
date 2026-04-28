@@ -15,6 +15,7 @@ import com.example.medicare.Admin.activities.AdminMainActivity
 import com.example.medicare.Doctor.activities.DoctorMainActivity
 import com.example.medicare.Patient.activities.MainActivity
 import com.example.medicare.R
+import com.example.medicare.utils.SessionManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
@@ -23,6 +24,7 @@ class LoginActivity : AppCompatActivity() {
     private var isPasswordVisible = false
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
+    private lateinit var sessionManager: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +32,7 @@ class LoginActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
+        sessionManager = SessionManager(this)
 
         val appLogoText = findViewById<TextView>(R.id.appLogoText)
         val emailInput = findViewById<EditText>(R.id.emailInput)
@@ -71,6 +74,10 @@ class LoginActivity : AppCompatActivity() {
                                 database.reference.child("users").child(uid).child("role").get()
                                     .addOnSuccessListener { snapshot ->
                                         val role = snapshot.value as? String ?: "Patient"
+                                        
+                                        // Save Session
+                                        sessionManager.saveLoginSession(email, role)
+                                        
                                         Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
                                         navigateToMain(role)
                                     }
@@ -99,6 +106,7 @@ class LoginActivity : AppCompatActivity() {
             "Admin" -> Intent(this, AdminMainActivity::class.java)
             else -> Intent(this, MainActivity::class.java)
         }
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
     }

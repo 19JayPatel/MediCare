@@ -8,5 +8,6 @@ data class AdminDoctorModel(
     val timing: String = "",
     val status: String = "Active", // "Active" or "On Leave"
     val imageResId: Int? = null,
-    val imageName: String? = null
+    val imageName: String? = null,
+    val imageUrl: String = ""
 )

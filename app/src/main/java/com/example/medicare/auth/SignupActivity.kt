@@ -20,6 +20,8 @@ import com.example.medicare.R
 import com.google.android.material.card.MaterialCardView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SignupActivity : AppCompatActivity() {
 
@@ -88,10 +90,17 @@ class SignupActivity : AppCompatActivity() {
                     .addOnCompleteListener(this) { task ->
                         if (task.isSuccessful) {
                             val userId = auth.currentUser?.uid
+                            
+                            // Format current date for joinedDate
+                            val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                            val currentDate = sdf.format(Date())
+                            
                             val userMap = mapOf(
                                 "fullName" to name,
                                 "email" to email,
-                                "role" to selectedRole
+                                "role" to selectedRole,
+                                "joinedDate" to currentDate,
+                                "createdAt" to System.currentTimeMillis()
                             )
 
                             userId?.let {

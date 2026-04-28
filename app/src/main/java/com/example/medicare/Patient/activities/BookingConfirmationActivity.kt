@@ -10,10 +10,9 @@ import com.example.medicare.Patient.models.AppointmentModel
 import com.example.medicare.R
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 class BookingConfirmationActivity : AppCompatActivity() {
 
@@ -21,22 +20,26 @@ class BookingConfirmationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_booking_confirmation)
 
-        // 1. Get data from Intent
         val doctorUid = intent.getStringExtra("doctorUid") ?: ""
         val doctorName = intent.getStringExtra("doctorName") ?: ""
         val specialty = intent.getStringExtra("specialty") ?: ""
-        val clinicName = intent.getStringExtra("clinicName") ?: ""
         val selectedDate = intent.getStringExtra("selectedDate") ?: ""
         val selectedTime = intent.getStringExtra("selectedTime") ?: ""
 
-        // 2. Set UI
         findViewById<TextView>(R.id.tvDoctorName).text = doctorName
         findViewById<TextView>(R.id.tvDateTime).text = "$selectedDate | $selectedTime"
 
-        // 3. Save to Firebase with Double Booking Validation
-        val patientUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        val auth = FirebaseAuth.getInstance()
+        val database = FirebaseDatabase.getInstance().reference
+        val patientUid = auth.currentUser?.uid ?: ""
+
         if (patientUid.isNotEmpty()) {
-            checkAndBookSlot(doctorUid, doctorName, specialty, clinicName, selectedDate, selectedTime, patientUid)
+            // Fetch Patient Name first
+            database.child("users").child(patientUid).child("fullName").get()
+                .addOnSuccessListener { snapshot ->
+                    val patientName = snapshot.value as? String ?: "Patient"
+                    checkAndBookSlot(database, doctorUid, doctorName, specialty, selectedDate, selectedTime, patientUid, patientName)
+                }
         }
 
         findViewById<MaterialButton>(R.id.btnDone).setOnClickListener {
@@ -48,59 +51,68 @@ class BookingConfirmationActivity : AppCompatActivity() {
     }
 
     private fun checkAndBookSlot(
+        database: DatabaseReference,
         doctorUid: String,
         doctorName: String,
         specialty: String,
-        clinicName: String,
         selectedDate: String,
         selectedTime: String,
-        patientUid: String
+        patientUid: String,
+        patientName: String
     ) {
-        val appointmentsRef = FirebaseDatabase.getInstance().getReference("Appointments")
-        
-        // Double check if slot is already booked before saving
+        val appointmentsRef = database.child("Appointments")
+
+        // 1. Double Booking Validation
         appointmentsRef.orderByChild("doctorUid").equalTo(doctorUid)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     var isAlreadyBooked = false
                     for (postSnapshot in snapshot.children) {
                         val appt = postSnapshot.getValue(AppointmentModel::class.java)
-                        if (appt != null && appt.bookingDate == selectedDate && appt.bookingTime == selectedTime) {
+                        if (appt != null && appt.appointmentDate == selectedDate && 
+                            appt.appointmentTime == selectedTime && appt.status != "Cancelled") {
                             isAlreadyBooked = true
                             break
                         }
                     }
 
                     if (isAlreadyBooked) {
-                        Toast.makeText(this@BookingConfirmationActivity, "This time slot is already booked. Please select another slot.", Toast.LENGTH_LONG).show()
-                        finish() // Go back to selection
+                        Toast.makeText(this@BookingConfirmationActivity, "This time slot is already booked.", Toast.LENGTH_LONG).show()
+                        finish()
                     } else {
-                        val appointmentId = appointmentsRef.push().key ?: ""
+                        // 2. Save Appointment
+                        val bookingId = "BOOK_${System.currentTimeMillis()}"
+                        
+                        // Get Day from Date
+                        val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                        val date = sdf.parse(selectedDate)
+                        val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+                        val appointmentDay = if (date != null) dayFormat.format(date) else ""
+
                         val appointment = AppointmentModel(
-                            appointmentId = appointmentId,
+                            bookingId = bookingId,
                             patientUid = patientUid,
                             doctorUid = doctorUid,
                             doctorName = doctorName,
-                            specialty = specialty,
-                            clinicName = clinicName,
-                            bookingDate = selectedDate,
-                            bookingTime = selectedTime
+                            patientName = patientName,
+                            doctorSpecialty = specialty,
+                            appointmentDate = selectedDate,
+                            appointmentDay = appointmentDay,
+                            appointmentTime = selectedTime,
+                            status = "Upcoming"
                         )
 
-                        appointmentsRef.child(appointmentId).setValue(appointment)
+                        appointmentsRef.child(bookingId).setValue(appointment)
                             .addOnSuccessListener {
-                                Log.d("Booking", "Appointment saved successfully")
-                                Toast.makeText(this@BookingConfirmationActivity, "Appointment Confirmed!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@BookingConfirmationActivity, "Booking Successful!", Toast.LENGTH_SHORT).show()
                             }
                             .addOnFailureListener {
-                                Toast.makeText(this@BookingConfirmationActivity, "Failed to save booking", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@BookingConfirmationActivity, "Booking Failed", Toast.LENGTH_SHORT).show()
                             }
                     }
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@BookingConfirmationActivity, "Database Error: ${error.message}", Toast.LENGTH_SHORT).show()
-                }
+                override fun onCancelled(error: DatabaseError) {}
             })
     }
 }
