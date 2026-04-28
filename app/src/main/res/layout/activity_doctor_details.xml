@@ -346,6 +346,7 @@
                             android:orientation="horizontal">
 
                             <TextView
+                                android:id="@+id/tvWorkingDays"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
@@ -354,7 +355,7 @@
                                 android:textSize="14sp" />
 
                             <TextView
-                                android:id="@+id/tvWorkingHoursMonFri"
+                                android:id="@+id/tvWorkingHoursTime"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="09:00 AM - 05:00 PM"
@@ -364,15 +365,19 @@
                         </LinearLayout>
 
                         <View
+                            android:id="@+id/workingHoursDivider"
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_marginVertical="12dp"
-                            android:background="@color/border" />
+                            android:background="@color/border"
+                            android:visibility="gone" />
 
                         <LinearLayout
+                            android:id="@+id/rowSaturday"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:visibility="gone">
 
                             <TextView
                                 android:layout_width="0dp"

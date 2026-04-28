@@ -12,17 +12,25 @@ import com.example.medicare.Patient.adapters.BookingModel
 import com.example.medicare.Patient.activities.MainActivity
 import com.example.medicare.R
 import com.example.medicare.databinding.FragmentMyBookingsBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 
 class MyBookingsFragment : Fragment() {
 
     private var _binding: FragmentMyBookingsBinding? = null
     private val binding get() = _binding!!
+    private lateinit var database: DatabaseReference
+    private lateinit var auth: FirebaseAuth
+    private val bookingList = mutableListOf<BookingModel>()
+    private lateinit var adapter: BookingAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMyBookingsBinding.inflate(inflater, container, false)
+        database = FirebaseDatabase.getInstance().reference
+        auth = FirebaseAuth.getInstance()
         return binding.root
     }
 
@@ -34,44 +42,53 @@ class MyBookingsFragment : Fragment() {
         }
 
         setupBookingList()
+        fetchMyBookings()
     }
 
     private fun setupBookingList() {
-        val bookings = arrayListOf(
-            BookingModel(
-                "May 22, 2023 - 10.00 AM",
-                "Dr. Jatin Patel",
-                "Orthopedic Surgery",
-                "Elite Ortho Clinic, USA",
-                R.drawable.ic_doctor1
-            ),
-            BookingModel(
-                "June 14, 2023 - 15.00 PM",
-                "Dr. Danesh Shah",
-                "Gastroenterologist",
-                "Digestive Institute, USA",
-                R.drawable.ic_doctor2
-            ),
-            BookingModel(
-                "June 21, 2023 - 10.00 AM",
-                "Dr. Navan Yadav",
-                "Pediatrics",
-                "Serenity Pediatrics Clinic",
-                R.drawable.ic_doctor3
-            )
-        )
-
-        binding.bookingRecycler.layoutManager = LinearLayoutManager(requireContext())
-        binding.bookingRecycler.adapter = BookingAdapter(bookings, { booking ->
-            Toast.makeText(requireContext(), "Canceled: ${booking.doctorName}", Toast.LENGTH_SHORT)
-                .show()
+        adapter = BookingAdapter(bookingList, { booking ->
+            cancelBooking(booking)
         }, { booking ->
-            Toast.makeText(
-                requireContext(),
-                "Rescheduled: ${booking.doctorName}",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(requireContext(), "Rescheduled: ${booking.doctorName}", Toast.LENGTH_SHORT).show()
         })
+        binding.bookingRecycler.layoutManager = LinearLayoutManager(requireContext())
+        binding.bookingRecycler.adapter = adapter
+    }
+
+    private fun fetchMyBookings() {
+        val userId = auth.currentUser?.uid ?: return
+        database.child("appointments").orderByChild("patientId").equalTo(userId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    bookingList.clear()
+                    for (postSnapshot in snapshot.children) {
+                        val booking = postSnapshot.getValue(BookingModel::class.java)
+                        booking?.let { bookingList.add(it) }
+                    }
+                    
+                    if (bookingList.isEmpty()) {
+                        // Fallback or empty state
+                        binding.bookingRecycler.visibility = View.GONE
+                        // You might want to show an empty state view here
+                    } else {
+                        binding.bookingRecycler.visibility = View.VISIBLE
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(context, "Failed to load bookings", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun cancelBooking(booking: BookingModel) {
+        if (booking.bookingId.isNotEmpty()) {
+            database.child("appointments").child(booking.bookingId).removeValue()
+                .addOnSuccessListener {
+                    Toast.makeText(context, "Booking canceled", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 
     override fun onDestroyView() {

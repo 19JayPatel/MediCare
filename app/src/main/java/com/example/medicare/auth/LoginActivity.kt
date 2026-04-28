@@ -11,17 +11,25 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.medicare.Admin.activities.AdminMainActivity
+import com.example.medicare.Doctor.activities.DoctorMainActivity
 import com.example.medicare.Patient.activities.MainActivity
 import com.example.medicare.R
-import com.example.medicare.auth.SignupActivity
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class LoginActivity : AppCompatActivity() {
 
     private var isPasswordVisible = false
+    private lateinit var auth: FirebaseAuth
+    private lateinit var database: FirebaseDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+        auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance()
 
         val appLogoText = findViewById<TextView>(R.id.appLogoText)
         val emailInput = findViewById<EditText>(R.id.emailInput)
@@ -47,7 +55,7 @@ class LoginActivity : AppCompatActivity() {
             passwordInput.setSelection(passwordInput.text.length)
         }
 
-        // Simple Login Logic (No Database)
+        // Firebase Login Logic
         getStartedBtn.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
@@ -55,11 +63,25 @@ class LoginActivity : AppCompatActivity() {
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
             } else {
-                // Successful Login Simulation
-                Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this) { task ->
+                        if (task.isSuccessful) {
+                            val userId = auth.currentUser?.uid
+                            userId?.let { uid ->
+                                database.reference.child("users").child(uid).child("role").get()
+                                    .addOnSuccessListener { snapshot ->
+                                        val role = snapshot.value as? String ?: "Patient"
+                                        Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
+                                        navigateToMain(role)
+                                    }
+                                    .addOnFailureListener {
+                                        Toast.makeText(this, "Error fetching user role", Toast.LENGTH_SHORT).show()
+                                    }
+                            }
+                        } else {
+                            Toast.makeText(this, "Login Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
             }
         }
 
@@ -68,5 +90,16 @@ class LoginActivity : AppCompatActivity() {
              startActivity(Intent(this, SignupActivity::class.java))
              finish()
         }
+    }
+
+    private fun navigateToMain(role: String) {
+        val intent = when (role) {
+            "Patient" -> Intent(this, MainActivity::class.java)
+            "Doctor" -> Intent(this, DoctorMainActivity::class.java)
+            "Admin" -> Intent(this, AdminMainActivity::class.java)
+            else -> Intent(this, MainActivity::class.java)
+        }
+        startActivity(intent)
+        finish()
     }
 }

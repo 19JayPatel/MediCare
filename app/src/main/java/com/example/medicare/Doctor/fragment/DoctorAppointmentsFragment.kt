@@ -10,17 +10,25 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.medicare.Doctor.adapter.DoctorAppointmentsAdapter
 import com.example.medicare.Doctor.model.AppointmentModel
 import com.example.medicare.databinding.FragmentDoctorAppointmentsBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 
 class DoctorAppointmentsFragment : Fragment() {
 
     private var _binding: FragmentDoctorAppointmentsBinding? = null
     private val binding get() = _binding!!
+    private lateinit var auth: FirebaseAuth
+    private lateinit var database: DatabaseReference
+    private val appointmentList = mutableListOf<AppointmentModel>()
+    private lateinit var adapter: DoctorAppointmentsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentDoctorAppointmentsBinding.inflate(inflater, container, false)
+        auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance().reference
         return binding.root
     }
 
@@ -29,21 +37,42 @@ class DoctorAppointmentsFragment : Fragment() {
 
         setupRecyclerView()
         setupClickListeners()
+        fetchAppointments()
     }
 
     private fun setupRecyclerView() {
-        val dummyAppointments = listOf(
-            AppointmentModel("1", "Ravi Sharma", "Jan 15, 2025", "09:00 AM", "Skin allergy & rash on arms", "Pending"),
-            AppointmentModel("2", "Meena Patel", "Jan 15, 2025", "10:30 AM", "Acne treatment follow-up", "Accepted"),
-            AppointmentModel("3", "Arjun Desai", "Jan 16, 2025", "11:00 AM", "Eczema — recurring patches", "Pending"),
-            AppointmentModel("4", "Sunita Rao", "Jan 17, 2025", "12:00 PM", "Psoriasis consultation", "Rejected"),
-            AppointmentModel("5", "Vikram Singh", "Jan 18, 2025", "04:30 PM", "Routine skin check", "Pending")
-        )
-
+        adapter = DoctorAppointmentsAdapter(appointmentList)
         binding.rvAppointments.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = DoctorAppointmentsAdapter(dummyAppointments)
+            this.adapter = this@DoctorAppointmentsFragment.adapter
         }
+    }
+
+    private fun fetchAppointments() {
+        val doctorId = auth.currentUser?.uid ?: return
+        database.child("appointments").orderByChild("doctorId").equalTo(doctorId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    appointmentList.clear()
+                    for (postSnapshot in snapshot.children) {
+                        val appointment = postSnapshot.getValue(AppointmentModel::class.java)
+                        appointment?.let { 
+                            // Ensure the ID is set from the key if not already in the model
+                            val apptWithId = it.copy(id = postSnapshot.key ?: it.id)
+                            appointmentList.add(apptWithId) 
+                        }
+                    }
+                    
+                    if (appointmentList.isEmpty()) {
+                        // Handle empty state if needed
+                    }
+                    adapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(context, "Failed to load appointments", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun setupClickListeners() {

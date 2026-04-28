@@ -2,13 +2,15 @@ package com.example.medicare.Doctor.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.medicare.Doctor.model.ScheduleModel
 import com.example.medicare.databinding.ItemScheduleBinding
 
-class ScheduleAdapter(private val schedules: MutableList<ScheduleModel>) :
-    RecyclerView.Adapter<ScheduleAdapter.ViewHolder>() {
+class ScheduleAdapter(
+    private var schedules: List<ScheduleModel>,
+    private val onEditClick: (ScheduleModel) -> Unit,
+    private val onDeleteClick: (ScheduleModel) -> Unit
+) : RecyclerView.Adapter<ScheduleAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: ItemScheduleBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -26,17 +28,19 @@ class ScheduleAdapter(private val schedules: MutableList<ScheduleModel>) :
             tvSlotDetails.text = "${schedule.startTime} – ${schedule.endTime} · ${schedule.slotDuration}"
 
             btnEdit.setOnClickListener {
-                Toast.makeText(root.context, "Edit ${schedule.day}", Toast.LENGTH_SHORT).show()
+                onEditClick(schedule)
             }
 
             btnDelete.setOnClickListener {
-                schedules.removeAt(position)
-                notifyItemRemoved(position)
-                notifyItemRangeChanged(position, schedules.size)
-                Toast.makeText(root.context, "Deleted ${schedule.day}", Toast.LENGTH_SHORT).show()
+                onDeleteClick(schedule)
             }
         }
     }
 
     override fun getItemCount() = schedules.size
+
+    fun updateData(newSchedules: List<ScheduleModel>) {
+        schedules = newSchedules
+        notifyDataSetChanged()
+    }
 }

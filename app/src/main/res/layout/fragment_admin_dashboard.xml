@@ -108,6 +108,7 @@
                             app:tint="@color/primary" />
 
                         <TextView
+                            android:id="@+id/tvTotalBookingsCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
@@ -164,6 +165,7 @@
                             app:tint="@color/accent" />
 
                         <TextView
+                            android:id="@+id/tvTotalDoctorsCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
@@ -220,6 +222,7 @@
                             app:tint="@color/success" />
 
                         <TextView
+                            android:id="@+id/tvTotalUsersCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
@@ -276,6 +279,7 @@
                             app:tint="@color/warning" />
 
                         <TextView
+                            android:id="@+id/tvAvgRatingCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"

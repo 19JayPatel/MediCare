@@ -13,19 +13,27 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.medicare.Admin.activities.AdminMainActivity
+import com.example.medicare.Doctor.activities.AddDoctorActivity
 import com.example.medicare.Doctor.activities.DoctorMainActivity
 import com.example.medicare.Patient.activities.MainActivity
 import com.example.medicare.R
 import com.google.android.material.card.MaterialCardView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class SignupActivity : AppCompatActivity() {
 
     private var isPasswordVisible = false
     private var selectedRole = "Patient" // Default selection
+    private lateinit var auth: FirebaseAuth
+    private lateinit var database: FirebaseDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signup)
+
+        auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance()
 
         val appLogoText = findViewById<TextView>(R.id.appLogoText)
         val nameInput = findViewById<EditText>(R.id.nameInput)
@@ -67,7 +75,7 @@ class SignupActivity : AppCompatActivity() {
             passwordInput.setSelection(passwordInput.text.length)
         }
 
-        // Simple Signup Logic (No Database)
+        // Firebase Signup Logic
         getStartedBtn.setOnClickListener {
             val name = nameInput.text.toString().trim()
             val email = emailInput.text.toString().trim()
@@ -76,18 +84,49 @@ class SignupActivity : AppCompatActivity() {
             if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Signup Successful as $selectedRole", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this) { task ->
+                        if (task.isSuccessful) {
+                            val userId = auth.currentUser?.uid
+                            val userMap = mapOf(
+                                "fullName" to name,
+                                "email" to email,
+                                "role" to selectedRole
+                            )
+
+                            userId?.let {
+                                database.reference.child("users").child(it).setValue(userMap)
+                                    .addOnSuccessListener {
+                                        Toast.makeText(this, "Signup Successful", Toast.LENGTH_SHORT).show()
+                                        navigateToMain(selectedRole)
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Toast.makeText(this, "Database Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                            }
+                        } else {
+                            Toast.makeText(this, "Authentication Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
             }
         }
 
         // Navigate to Login
         loginText.setOnClickListener {
-            startActivity(Intent(this, DoctorMainActivity::class.java))
+            startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
+    }
+
+    private fun navigateToMain(role: String) {
+        val intent = when (role) {
+            "Patient" -> Intent(this, MainActivity::class.java)
+            "Doctor" -> Intent(this, AddDoctorActivity::class.java)
+            "Admin" -> Intent(this, AdminMainActivity::class.java)
+            else -> Intent(this, MainActivity::class.java)
+        }
+        startActivity(intent)
+        finish()
     }
 
     private fun updateRoleSelection(

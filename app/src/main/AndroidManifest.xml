@@ -93,6 +93,11 @@
             android:exported="false"
             android:theme="@style/Theme.MediCare" />
 
+        <activity
+            android:name=".Doctor.activities.AddDoctorActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MediCare" />
+
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.example.medicare.Patient.adapter
+package com.example.medicare.Patient.adapters
 
 import android.view.LayoutInflater
 import android.view.View

@@ -15,11 +15,16 @@ import com.example.medicare.Patient.adapters.ProfileMenuAdapter
 import com.example.medicare.R
 import com.example.medicare.databinding.FragmentPatientProfileBinding
 import com.example.medicare.Patient.models.ProfileMenuItem
+import com.example.medicare.auth.LoginActivity
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 
 class PatientProfileFragment : Fragment() {
 
     private var _binding: FragmentPatientProfileBinding? = null
     private val binding get() = _binding!!
+    private lateinit var auth: FirebaseAuth
+    private lateinit var database: DatabaseReference
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,6 +32,8 @@ class PatientProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPatientProfileBinding.inflate(inflater, container, false)
+        auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance().reference
         return binding.root
     }
 
@@ -34,6 +41,26 @@ class PatientProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupMenu()
         setupClickListeners()
+        fetchUserProfile()
+    }
+
+    private fun fetchUserProfile() {
+        val userId = auth.currentUser?.uid ?: return
+        database.child("users").child(userId).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (_binding != null) {
+                    val name = snapshot.child("fullName").value as? String ?: "User"
+                    val phone = snapshot.child("phone").value as? String ?: ""
+                    
+                    binding.tvName.text = name
+                    binding.tvPhone.text = phone
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("PatientProfile", "Database error: ${error.message}")
+            }
+        })
     }
 
     private fun setupMenu() {
@@ -57,7 +84,7 @@ class PatientProfileFragment : Fragment() {
                 handleMenuClick(getString(R.string.terms_and_conditions))
             },
             ProfileMenuItem(7, getString(R.string.log_out), R.drawable.ic_logout) {
-                handleMenuClick(getString(R.string.log_out))
+                logout()
             }
         )
 
@@ -65,6 +92,14 @@ class PatientProfileFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = ProfileMenuAdapter(menuItems)
         }
+    }
+
+    private fun logout() {
+        auth.signOut()
+        val intent = Intent(requireContext(), LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     private fun setupClickListeners() {

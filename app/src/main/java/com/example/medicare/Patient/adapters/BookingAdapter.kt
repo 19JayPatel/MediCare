@@ -6,11 +6,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.medicare.databinding.ItemBookingBinding
 
 data class BookingModel(
-    val date: String,
-    val doctorName: String,
-    val specialty: String,
-    val clinic: String,
-    val image: Int
+    val date: String = "",
+    val doctorName: String = "",
+    val specialty: String = "",
+    val clinic: String = "",
+    val image: Int = 0,
+    val imageName: String? = null,
+    val bookingId: String = "",
+    val time: String = ""
 )
 
 class BookingAdapter(
@@ -28,11 +31,17 @@ class BookingAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = list[position]
-        holder.binding.bookingDate.text = item.date
+        holder.binding.bookingDate.text = "${item.date} - ${item.time}"
         holder.binding.doctorName.text = item.doctorName
         holder.binding.doctorSpecialty.text = item.specialty
         holder.binding.clinicName.text = item.clinic
-        holder.binding.doctorImage.setImageResource(item.image)
+        
+        if (item.image != 0) {
+            holder.binding.doctorImage.setImageResource(item.image)
+        } else if (item.imageName != null) {
+            val resId = holder.itemView.context.resources.getIdentifier(item.imageName, "drawable", holder.itemView.context.packageName)
+            if (resId != 0) holder.binding.doctorImage.setImageResource(resId)
+        }
 
         holder.binding.btnCancel.setOnClickListener { onCancel(item) }
         holder.binding.btnReschedule.setOnClickListener { onReschedule(item) }
