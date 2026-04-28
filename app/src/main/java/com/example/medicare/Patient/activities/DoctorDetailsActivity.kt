@@ -67,11 +67,13 @@ class DoctorDetailsActivity : AppCompatActivity() {
                         
                         fetchDoctorSchedule(uid)
                         
-                        // Load Doctor Image using Glide
+                        // Load Doctor Image using Glide with centerCrop and circleCrop for proper styling
                         Glide.with(this@DoctorDetailsActivity)
                             .load(it.imageUrl)
                             .placeholder(R.drawable.ic_user)
                             .error(R.drawable.ic_user)
+                            .centerCrop()
+                            .circleCrop()
                             .into(binding.ivDoctorProfile)
 
                         // Handle Book Appointment Click

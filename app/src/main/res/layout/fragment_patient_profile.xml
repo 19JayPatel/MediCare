@@ -66,7 +66,7 @@
                     android:contentDescription="@string/profile_image_desc"
                     android:padding="2dp"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/ic_doctor1"
+                    android:src="@drawable/ic_person"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
