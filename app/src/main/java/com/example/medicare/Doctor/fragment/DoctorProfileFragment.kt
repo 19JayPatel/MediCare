@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.example.medicare.Doctor.activities.DoctorEditProfileActivity
 import com.example.medicare.R
 import com.example.medicare.databinding.FragmentDoctorProfileBinding
 import com.example.medicare.databinding.ItemProfileOptionBinding
@@ -92,6 +93,13 @@ class DoctorProfileFragment : Fragment() {
         binding.tvOptionTitle.text = title
         binding.tvOptionSubtitle.text = subtitle
         binding.ivOptionIcon.setImageResource(iconRes)
+        
+        // Navigation for Edit Profile
+        if (title == "Edit Profile") {
+            binding.root.setOnClickListener {
+                startActivity(Intent(requireContext(), DoctorEditProfileActivity::class.java))
+            }
+        }
     }
 
     private fun setupClickListeners() {
@@ -99,7 +107,7 @@ class DoctorProfileFragment : Fragment() {
             LogoutHelper.showLogoutDialog(requireContext())
         }
         binding.btnEditTop.setOnClickListener {
-            Toast.makeText(requireContext(), "Edit Profile", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(requireContext(), DoctorEditProfileActivity::class.java))
         }
     }
 

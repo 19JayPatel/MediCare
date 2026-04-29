@@ -27,6 +27,11 @@ class SelectTimeSlotActivity : AppCompatActivity() {
     private var selectedDate: String = ""
     private var selectedTime: String? = null
 
+    // For rotation handling
+    private var selectedYear: Int = -1
+    private var selectedMonth: Int = -1
+    private var selectedDay: Int = -1
+
     private var doctorUid: String? = null
     private var doctorModel: DoctorModel? = null
     private var doctorSchedules = mutableListOf<ScheduleModel>()
@@ -45,15 +50,32 @@ class SelectTimeSlotActivity : AppCompatActivity() {
             return
         }
 
-        // Initialize with today's date format
-        val calendar = Calendar.getInstance()
-        selectedDate = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(calendar.time)
+        // Restore state if rotating
+        if (savedInstanceState != null) {
+            selectedDate = savedInstanceState.getString("selectedDate", "")
+            selectedYear = savedInstanceState.getInt("selectedYear", -1)
+            selectedMonth = savedInstanceState.getInt("selectedMonth", -1)
+            selectedDay = savedInstanceState.getInt("selectedDay", -1)
+            selectedTime = savedInstanceState.getString("selectedTime")
+        } else {
+            // Initialize with today's date format for the first time
+            val calendar = Calendar.getInstance()
+            selectedYear = calendar.get(Calendar.YEAR)
+            selectedMonth = calendar.get(Calendar.MONTH)
+            selectedDay = calendar.get(Calendar.DAY_OF_MONTH)
+            selectedDate = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(calendar.time)
+        }
 
         setupAdapters()
         fetchDoctorData()
         fetchDoctorSchedules()
 
         findViewById<MaterialButton>(R.id.btnConfirmBooking).setOnClickListener {
+            // Final validation before booking
+            if (!isValidBooking()) {
+                return@setOnClickListener
+            }
+
             if (selectedTime == null) {
                 Toast.makeText(this, "Please select a time slot", Toast.LENGTH_SHORT).show()
             } else {
@@ -72,6 +94,16 @@ class SelectTimeSlotActivity : AppCompatActivity() {
         findViewById<View>(R.id.btnBack).setOnClickListener {
             finish()
         }
+    }
+
+    // Save state on rotation
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("selectedDate", selectedDate)
+        outState.putInt("selectedYear", selectedYear)
+        outState.putInt("selectedMonth", selectedMonth)
+        outState.putInt("selectedDay", selectedDay)
+        outState.putString("selectedTime", selectedTime)
     }
 
     private fun fetchDoctorData() {
@@ -99,8 +131,11 @@ class SelectTimeSlotActivity : AppCompatActivity() {
                     schedule?.let { doctorSchedules.add(it) }
                 }
                 setupCalendar()
-                // Initial load for today if available
-                checkAvailabilityAndGenerateSlots(Calendar.getInstance())
+                
+                // Reload slots for the currently selected date
+                val cal = Calendar.getInstance()
+                cal.set(selectedYear, selectedMonth, selectedDay)
+                checkAvailabilityAndGenerateSlots(cal)
             }
 
             override fun onCancelled(error: DatabaseError) {}
@@ -131,10 +166,29 @@ class SelectTimeSlotActivity : AppCompatActivity() {
 
     private fun setupCalendar() {
         val calendarView = findViewById<CalendarView>(R.id.calendarView)
-        val currentTime = System.currentTimeMillis()
-        calendarView.minDate = currentTime - 1000
+        
+        // PROBLEM 2 FIX: Prevent past dates selection
+        // Set minimum date to today
+        val minCalendar = Calendar.getInstance()
+        minCalendar.set(Calendar.HOUR_OF_DAY, 0)
+        minCalendar.set(Calendar.MINUTE, 0)
+        minCalendar.set(Calendar.SECOND, 0)
+        minCalendar.set(Calendar.MILLISECOND, 0)
+        calendarView.minDate = minCalendar.timeInMillis
+
+        // PROBLEM 1 FIX: Keep selected date after rotation
+        if (selectedYear != -1) {
+            val restoreCal = Calendar.getInstance()
+            restoreCal.set(selectedYear, selectedMonth, selectedDay)
+            calendarView.date = restoreCal.timeInMillis
+        }
 
         calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
+            // Store selected date parts for rotation
+            selectedYear = year
+            selectedMonth = month
+            selectedDay = dayOfMonth
+            
             val cal = Calendar.getInstance()
             cal.set(year, month, dayOfMonth)
             checkAvailabilityAndGenerateSlots(cal)
@@ -145,21 +199,20 @@ class SelectTimeSlotActivity : AppCompatActivity() {
         val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
         val selectedDayName = dayFormat.format(cal.time)
 
+        // Update selectedDate string
+        selectedDate = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(cal.time)
+
         // Find schedule for the selected day
         val schedule = doctorSchedules.find { it.day.equals(selectedDayName, ignoreCase = true) }
 
         if (schedule != null) {
-            selectedDate = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(cal.time)
-            selectedTime = null
             generateSlotsFromSchedule(schedule)
         } else {
-            selectedDate = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(cal.time)
-            selectedTime = null
             morningAdapter.updateData(emptyList())
             afternoonAdapter.updateData(emptyList())
             Toast.makeText(
                 this,
-                "Doctor is not available on this day. Please select available working days.",
+                "Doctor is not available on this day.",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -183,14 +236,13 @@ class SelectTimeSlotActivity : AppCompatActivity() {
             endTime.time = sdf.parse(endTimeStr) ?: return
         } catch (e: Exception) { return }
 
-        // Fetch booked slots for this doctor and date
+        // Fetch booked slots
         database.child("Appointments").orderByChild("doctorUid").equalTo(doctorUid)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val bookedSlots = mutableSetOf<String>()
                     for (postSnapshot in snapshot.children) {
                         val appointment = postSnapshot.getValue(com.example.medicare.Patient.models.AppointmentModel::class.java)
-                        // Updated field names from refactored AppointmentModel
                         if (appointment != null && appointment.appointmentDate == selectedDate && appointment.status != "Cancelled") {
                             bookedSlots.add(appointment.appointmentTime)
                         }
@@ -200,16 +252,37 @@ class SelectTimeSlotActivity : AppCompatActivity() {
                     val afternoonSlots = mutableListOf<TimeSlotModel>()
 
                     val currentSlot = startTime.clone() as Calendar
+                    
+                    // REAL-TIME SLOT FILTERING: Get current time if selected date is today
+                    val isToday = isSelectedDateToday()
+                    val now = Calendar.getInstance()
 
                     while (currentSlot.before(endTime)) {
-                        val time = sdf.format(currentSlot.time)
-                        val isAvailable = !bookedSlots.contains(time)
+                        val slotTimeStr = sdf.format(currentSlot.time)
+                        
+                        // Check if slot is in the past (if selected date is today)
+                        var isPastSlot = false
+                        if (isToday) {
+                            val slotCal = Calendar.getInstance()
+                            slotCal.set(Calendar.HOUR_OF_DAY, currentSlot.get(Calendar.HOUR_OF_DAY))
+                            slotCal.set(Calendar.MINUTE, currentSlot.get(Calendar.MINUTE))
+                            slotCal.set(Calendar.SECOND, 0)
+                            
+                            if (slotCal.before(now)) {
+                                isPastSlot = true
+                            }
+                        }
 
-                        val hour = currentSlot.get(Calendar.HOUR_OF_DAY)
-                        if (hour < 12) {
-                            morningSlots.add(TimeSlotModel(time, isAvailable = isAvailable, type = SlotType.MORNING))
-                        } else {
-                            afternoonSlots.add(TimeSlotModel(time, isAvailable = isAvailable, type = SlotType.AFTERNOON))
+                        // Only show future slots for today
+                        if (!isPastSlot) {
+                            val isAvailable = !bookedSlots.contains(slotTimeStr)
+                            val hour = currentSlot.get(Calendar.HOUR_OF_DAY)
+                            
+                            if (hour < 12) {
+                                morningSlots.add(TimeSlotModel(slotTimeStr, isAvailable = isAvailable, type = SlotType.MORNING))
+                            } else {
+                                afternoonSlots.add(TimeSlotModel(slotTimeStr, isAvailable = isAvailable, type = SlotType.AFTERNOON))
+                            }
                         }
 
                         currentSlot.add(Calendar.MINUTE, duration)
@@ -221,5 +294,54 @@ class SelectTimeSlotActivity : AppCompatActivity() {
 
                 override fun onCancelled(error: DatabaseError) {}
             })
+    }
+
+    // Helper to check if selected date is today
+    private fun isSelectedDateToday(): Boolean {
+        val today = Calendar.getInstance()
+        return selectedYear == today.get(Calendar.YEAR) &&
+               selectedMonth == today.get(Calendar.MONTH) &&
+               selectedDay == today.get(Calendar.DAY_OF_MONTH)
+    }
+
+    // Final booking validation
+    private fun isValidBooking(): Boolean {
+        val today = Calendar.getInstance()
+        today.set(Calendar.HOUR_OF_DAY, 0)
+        today.set(Calendar.MINUTE, 0)
+        today.set(Calendar.SECOND, 0)
+        today.set(Calendar.MILLISECOND, 0)
+
+        val selected = Calendar.getInstance()
+        selected.set(selectedYear, selectedMonth, selectedDay, 0, 0, 0)
+        selected.set(Calendar.MILLISECOND, 0)
+
+        if (selected.before(today)) {
+            Toast.makeText(this, "Cannot book appointments for past dates", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        
+        // If today, check time
+        if (isSelectedDateToday() && selectedTime != null) {
+            val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+            val slotTime = Calendar.getInstance()
+            try {
+                slotTime.time = sdf.parse(selectedTime!!) ?: return false
+                
+                val now = Calendar.getInstance()
+                val slotFullTime = Calendar.getInstance()
+                slotFullTime.set(Calendar.HOUR_OF_DAY, slotTime.get(Calendar.HOUR_OF_DAY))
+                slotFullTime.set(Calendar.MINUTE, slotTime.get(Calendar.MINUTE))
+                
+                if (slotFullTime.before(now)) {
+                    Toast.makeText(this, "This time slot has already passed", Toast.LENGTH_SHORT).show()
+                    return false
+                }
+            } catch (e: Exception) {
+                return false
+            }
+        }
+        
+        return true
     }
 }
