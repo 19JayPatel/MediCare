@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app/src/main/res/drawable/ic_logo.xml" alt="MediCare Logo" width="100"/>
+<img src="" alt="MediCare Logo" width="100"/>
 
 # 🏥 MediCare
 
