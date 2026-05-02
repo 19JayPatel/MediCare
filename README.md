@@ -21,7 +21,7 @@
 
 <div align="center">
 
-[![Download APK](https://img.shields.io/badge/Download-APK-success?style=for-the-badge&logo=android)](https://github.com/19JayPatel/MediCare/releases/tag/v1.0)
+[![Download APK](https://img.shields.io/badge/Download-APK-success?style=for-the-badge&logo=android)](https://github.com/19JayPatel/MediCare/releases/download/v1.0/app-debug.apk)
 
 </div>
 
