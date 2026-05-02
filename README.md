@@ -482,13 +482,6 @@ copies or substantial portions of the Software.
 <div align="center">
 
 **Jay Sidapara**
-*Android Developer · B.Tech Computer Science · R.K. University, Rajkot*
-
-[![Enrollment](https://img.shields.io/badge/Enrollment-23FOTCA11232-2A6F97?style=flat-square)](https://rku.ac.in)
-[![University](https://img.shields.io/badge/R.K._University-Rajkot-81BD46?style=flat-square)](https://rku.ac.in)
-[![Guide](https://img.shields.io/badge/Guide-Jay_Pithadiya,_Asst._Professor-gray?style=flat-square)](https://rku.ac.in)
-
-*Internal Guide: Jay Pithadiya, Assistant Professor, R.K. University*
 
 </div>
 
