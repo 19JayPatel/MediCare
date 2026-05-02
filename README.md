@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="" alt="MediCare Logo" width="100"/>
-
 # 🏥 MediCare
 
 ### *Your Health Appointments, Made Easy*
@@ -332,29 +330,29 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 | Splash | Onboarding 1 | Onboarding 2 | Sign Up | Log In |
 |:------:|:------------:|:------------:|:-------:|:------:|
-| ![](screenshots/splash.png) | ![](screenshots/onboarding1.png) | ![](screenshots/onboarding2.png) | ![](screenshots/signup.png) | ![](screenshots/login.png) |
+| ![](Screenshot/Splashscreen.jpeg) | ![](Screenshot/onboarding01.jpeg) | ![](Screenshot/onboarding02.jpeg) | ![](Screenshot/siguupscreen.png) | ![](Screenshot/loginscreen.png) |
 
 ### Patient Module
 
 | Home | Doctor List | Doctor Details | Time Slot | Confirmation |
 |:----:|:-----------:|:--------------:|:---------:|:------------:|
-| ![](screenshots/patient_home.png) | ![](screenshots/all_doctors.png) | ![](screenshots/doctor_details.png) | ![](screenshots/time_slot.png) | ![](screenshots/booking_confirmed.png) |
+| ![](Screenshot/Userhomescreen.jpeg) | ![](Screenshot/alldoc.png) | ![](Screenshot/doctordetails.jpeg) | ![](Screenshot/selectetimedate.jpeg) | ![](Screenshot/confirmbooking.png) |
 
-| My Bookings | Hospital Map | Patient Profile | Edit Profile |
-|:-----------:|:------------:|:---------------:|:------------:|
-| ![](screenshots/my_bookings.png) | ![](screenshots/map.png) | ![](screenshots/patient_profile.png) | ![](screenshots/edit_profile.png) |
+| My Bookings | Patient Profile | Edit Profile |
+|:-----------:|:---------------:|:------------:|
+| ![](Screenshot/booking.png) | ![](Screenshot/userprofile.png) | ![](Screenshot/updateprofile.png) |
 
 ### Doctor Module
 
 | Dashboard | Appointments | Schedule | Doctor Profile |
 |:---------:|:------------:|:--------:|:--------------:|
-| ![](screenshots/doctor_dashboard.png) | ![](screenshots/doctor_appointments.png) | ![](screenshots/doctor_schedule.png) | ![](screenshots/doctor_profile.png) |
+| ![](Screenshot/doctordashboard.jpeg) | ![](Screenshot/doctorappointment.jpeg) | ![](Screenshot/doctoraddschedule.jpeg) | ![](Screenshot/docprofile.png) |
 
 ### Admin Module
 
 | Admin Dashboard | Doctor Management | User Management | Admin Profile |
 |:---------------:|:-----------------:|:---------------:|:-------------:|
-| ![](screenshots/admin_dashboard.png) | ![](screenshots/admin_doctors.png) | ![](screenshots/admin_users.png) | ![](screenshots/admin_profile.png) |
+| ![](Screenshot/admindashoabrd.png) | ![](Screenshot/admindoc.png) | ![](Screenshot/adminuser.png) | ![](Screenshot/adminprofile.png) |
 
 ---
 
