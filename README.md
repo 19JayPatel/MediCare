@@ -17,6 +17,20 @@
 
 <br/>
 
+## 📥 Download APK
+
+<div align="center">
+
+[![Download APK](https://img.shields.io/badge/Download-APK-success?style=for-the-badge&logo=android)](https://github.com/19JayPatel/MediCare/releases/tag/v1.0)
+
+</div>
+
+---
+
+## 📖 Project Overview
+
+<br/>
+
 [Features](#-features) • [Tech Stack](#-tech-stack) • [Architecture](#-project-structure) • [Setup](#-getting-started) • [Screenshots](#-screenshots) • [Modules](#-modules) • [Roadmap](#-roadmap)
 
 </div>
